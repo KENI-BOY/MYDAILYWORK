@@ -1,0 +1,117 @@
+# =====================================================
+# CREDIT CARD FRAUD DETECTION USING MACHINE LEARNING
+# =====================================================
+
+# Import Libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import joblib
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from imblearn.over_sampling import SMOTE
+
+# -----------------------------------------------------
+# 1. Load Dataset
+# -----------------------------------------------------
+df = pd.read_csv("C:\Users\KARTHI S\Downloads\archive (7)\creditcard.csv")
+
+print("Dataset Loaded Successfully!")
+print(df.head())
+
+# -----------------------------------------------------
+# 2. Check Class Distribution (Imbalance)
+# -----------------------------------------------------
+print("\nClass Distribution:")
+print(df['Class'].value_counts())
+
+sns.countplot(x='Class', data=df)
+plt.title("Class Distribution (0 = Genuine, 1 = Fraud)")
+plt.show()
+
+# -----------------------------------------------------
+# 3. Separate Features and Target
+# -----------------------------------------------------
+X = df.drop('Class', axis=1)
+y = df['Class']
+
+# -----------------------------------------------------
+# 4. Normalize Data
+# -----------------------------------------------------
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# -----------------------------------------------------
+# 5. Handle Class Imbalance using SMOTE
+# -----------------------------------------------------
+smote = SMOTE(random_state=42)
+X_resampled, y_resampled = smote.fit_resample(X_scaled, y)
+
+print("\nAfter SMOTE Class Distribution:")
+print(pd.Series(y_resampled).value_counts())
+
+# -----------------------------------------------------
+# 6. Train-Test Split
+# -----------------------------------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X_resampled, y_resampled,
+    test_size=0.2,
+    random_state=42
+)
+
+# -----------------------------------------------------
+# 7. Train Random Forest Model
+# -----------------------------------------------------
+model = RandomForestClassifier(
+    n_estimators=200,
+    random_state=42
+)
+
+model.fit(X_train, y_train)
+
+# -----------------------------------------------------
+# 8. Predictions
+# -----------------------------------------------------
+y_pred = model.predict(X_test)
+
+# -----------------------------------------------------
+# 9. Evaluation
+# -----------------------------------------------------
+print("\nModel Evaluation:")
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# Confusion Matrix
+plt.figure(figsize=(6,4))
+sns.heatmap(confusion_matrix(y_test, y_pred),
+            annot=True,
+            fmt="d",
+            cmap="Blues")
+plt.title("Confusion Matrix")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.show()
+
+# -----------------------------------------------------
+# 10. Save Model
+# -----------------------------------------------------
+joblib.dump(model, "fraud_detection_model.pkl")
+print("\nModel saved as fraud_detection_model.pkl")
+
+# -----------------------------------------------------
+# 11. Predict New Transaction
+# -----------------------------------------------------
+print("\nPredicting Sample Transaction:")
+
+sample = X_test[0].reshape(1, -1)
+prediction = model.predict(sample)
+
+if prediction[0] == 1:
+    print("Fraudulent Transaction Detected!")
+else:
+    print("Genuine Transaction")
