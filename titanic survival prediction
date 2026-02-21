@@ -1,0 +1,164 @@
+# ============================================
+# TITANIC SURVIVAL PREDICTION PROJECT
+# ============================================
+
+# 1. Import Libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
+warnings.filterwarnings("ignore")
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+import joblib
+
+
+# 2. Load Dataset
+df = pd.read_csv("D:\phase1 project report\tested.csv")
+
+print("First 5 Rows:")
+print(df.head())
+
+print("\nDataset Info:")
+print(df.info())
+
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+
+# ============================================
+# 3. Data Preprocessing
+# ============================================
+
+# Fill missing Age with median
+df['Age'].fillna(df['Age'].median(), inplace=True)
+
+# Fill Embarked with mode
+df['Embarked'].fillna(df['Embarked'].mode()[0], inplace=True)
+
+# Drop Cabin column (too many missing values)
+df.drop('Cabin', axis=1, inplace=True)
+
+# Feature Engineering - Create Family Size
+df['FamilySize'] = df['SibSp'] + df['Parch'] + 1
+
+# Drop unnecessary columns
+df.drop(['PassengerId', 'Name', 'Ticket'], axis=1, inplace=True)
+
+
+# ============================================
+# 4. Encode Categorical Variables
+# ============================================
+
+le = LabelEncoder()
+
+df['Sex'] = le.fit_transform(df['Sex'])
+df['Embarked'] = le.fit_transform(df['Embarked'])
+
+
+# ============================================
+# 5. Exploratory Data Analysis
+# ============================================
+
+plt.figure(figsize=(6,4))
+sns.countplot(x='Survived', data=df)
+plt.title("Survival Count")
+plt.show()
+
+plt.figure(figsize=(6,4))
+sns.countplot(x='Survived', hue='Sex', data=df)
+plt.title("Survival by Gender")
+plt.show()
+
+plt.figure(figsize=(6,4))
+sns.countplot(x='Survived', hue='Pclass', data=df)
+plt.title("Survival by Class")
+plt.show()
+
+
+# ============================================
+# 6. Define Features and Target
+# ============================================
+
+X = df.drop('Survived', axis=1)
+y = df['Survived']
+
+
+# ============================================
+# 7. Train Test Split
+# ============================================
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+
+# ============================================
+# 8. Feature Scaling
+# ============================================
+
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+
+# ============================================
+# 9. Logistic Regression Model
+# ============================================
+
+log_model = LogisticRegression(max_iter=200)
+log_model.fit(X_train, y_train)
+
+y_pred_log = log_model.predict(X_test)
+
+print("\n===== Logistic Regression Results =====")
+print("Accuracy:", accuracy_score(y_test, y_pred_log))
+print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred_log))
+print("\nClassification Report:\n", classification_report(y_test, y_pred_log))
+
+
+# ============================================
+# 10. Random Forest Model
+# ============================================
+
+rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_model.fit(X_train, y_train)
+
+y_pred_rf = rf_model.predict(X_test)
+
+print("\n===== Random Forest Results =====")
+print("Accuracy:", accuracy_score(y_test, y_pred_rf))
+print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred_rf))
+print("\nClassification Report:\n", classification_report(y_test, y_pred_rf))
+
+
+# ============================================
+# 11. Compare Models
+# ============================================
+
+log_acc = accuracy_score(y_test, y_pred_log)
+rf_acc = accuracy_score(y_test, y_pred_rf)
+
+print("\nFinal Comparison:")
+print("Logistic Regression Accuracy:", log_acc)
+print("Random Forest Accuracy:", rf_acc)
+
+if rf_acc > log_acc:
+    print("Best Model: Random Forest")
+else:
+    print("Best Model: Logistic Regression")
+
+
+# ============================================
+# 12. Save Best Model
+# ============================================
+
+joblib.dump(rf_model, "titanic_model.pkl")
+joblib.dump(scaler, "scaler.pkl")
+
+print("\nModel and Scaler saved successfully!")
