@@ -87,4 +87,4 @@ LinkedIn: https://www.linkedin.com/in/karthi-shanmugam-3ba91a2a1/
 
 ---
 
-⭐ Thank you for reviewing my work!
+Thank you for reviewing my work!
