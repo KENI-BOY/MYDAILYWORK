@@ -12,6 +12,44 @@ Projects Included
 - Model Accuracy: ~80–85%
 - Model saved using Joblib
 
+# Titanic Survival Prediction
+
+## Project Description
+This project predicts whether a passenger survived the Titanic disaster using a Machine Learning model.
+
+## Technologies Used
+Python
+Pandas
+Scikit-learn
+Matplotlib
+Seaborn
+
+## Dataset
+Titanic dataset containing passenger information such as age, gender, class, fare and survival status.
+
+## How to Run the Project
+
+1. Clone the repository
+
+git clone https://github.com/KENI-BOY/MYDAILYWORK
+
+2. Navigate to the project folder
+
+cd MYDAILYWORK
+
+3. Install dependencies
+
+pip install pandas scikit-learn matplotlib seaborn
+
+4. Run the program
+
+python titanic.py
+
+## Output
+The program trains a Logistic Regression model and shows:
+- Prediction accuracy
+- Confusion matrix
+- Survival visualization graphs
 ---
 
 2. Credit Card Fraud Detection
